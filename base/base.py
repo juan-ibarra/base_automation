@@ -9,7 +9,7 @@ IMPLICIT_WAIT = 30
 class Base:
     def __init__(self, driver, by, locator):
         self.driver = driver
-        self.wait = WebDriverWait(self.driver, EXPLICIT_WAIT, poll_frequency=1)
+        self.wait = WebDriverWait(self.driver, IMPLICIT_WAIT, poll_frequency=1)
 
     def by_type(self, locator_type):
         locator_type = locator_type.lower()
