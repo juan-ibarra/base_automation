@@ -1,4 +1,5 @@
-from selenium import webdriver
+import pytest
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -7,7 +8,7 @@ IMPLICIT_WAIT = 30
 
 
 class Base:
-    def __init__(self, driver, by, locator):
+    def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(self.driver, IMPLICIT_WAIT, poll_frequency=1)
 
@@ -23,13 +24,14 @@ class Base:
         }
         return locator[locator_type]
 
+    def open_browser(self, page):
+        self.driver.get(page)
+        self.driver.maximize_window()
+
     def get_element(self, locator, locator_type="xpath"):
-        element = None
-        try:
-            by_type = self.by_type(locator_type)
-            element = self.driver.find_element(by_type, locator)
-        except Exception as e:
-            print(e)
+        by_type = self.by_type(locator_type)
+        element = (by_type, locator)
+        element = self.wait.until(EC.visibility_of_element_located(element))
         return element
 
     def wait_for_element(self, locator, locator_type="xpath", timeout=10, poll_frecuency=0.5):
@@ -49,7 +51,13 @@ class Base:
 
     def input_text(self, text, locator, locator_type="xpath"):
         element = self.get_element(locator, locator_type)
+        self.clear_element_text(locator, locator_type)
         element.send_keys(text)
+
+    def get_text(self, locator, locator_type="xpath"):
+        element = self.get_element(locator, locator_type)
+        text = element.get_attribute('value')
+        return text
 
     def clear_element_text(self, locator, locator_type="xpath"):
         try:
@@ -71,8 +79,13 @@ class Base:
                 print("Element found")
                 return True
             else:
-                print("Element Not Found")
+                print(f"Element {locator} Not Found")
                 return False
         except Exception as e:
             print(f"Element Not Found. ERROR: {e}")
             return False
+
+    def find_element(self, locator, locator_type="xpath"):
+        by_type = self.by_type(locator_type)
+        element = self.driver.find_element(by_type, locator)
+        return element
